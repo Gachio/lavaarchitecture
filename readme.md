@@ -9,3 +9,5 @@ Run the terraform apply command to create the Instance.
 The .gitignore file tells Git to ignore certain types of files
 
 AWS does not allow any incoming or outgoing traffc from an EC2 Instance. Hence, I create a security group to allow this EC2 Instance to receive traffic on port 8080.
+
+A single server is a flimsy in the real world. A solution is to run a cluster of servers, routing around servers that go down, and adjusting the size of the cluster up and down based on traffic.
