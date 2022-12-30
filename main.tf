@@ -50,7 +50,7 @@ resource "aws_launch_configuration" "lava" {
 	security_groups = [aws_security_group.alb.id]
 
 	user_data = <<-EOF
-				#!/bin/bash
+				#!/bin/bash -ex
 				echo "Hello, World" > index.html
 				nohup busybox httpd-f -p ${8080} &
 				EOF
