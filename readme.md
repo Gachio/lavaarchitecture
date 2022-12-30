@@ -1,3 +1,6 @@
+
+![image](https://user-images.githubusercontent.com/19356065/210041641-b75d4d65-10f7-4f1f-9428-633ef6f1b0a1.png)
+
 Run terraform init to tell Terraform to scan the codebase.
 By default, the provider code will b downloaded into a .terraform folder
 
