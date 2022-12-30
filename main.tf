@@ -44,10 +44,22 @@ output "public_ip" {
 
 */
 
-resource "aws_launch_configuration" "lava" {
+resource "aws_security_group" "instance" {
+	name = "lava-identity-instance"
+
+	ingress {
+		from_port = 8080
+		to_port = 8080
+		protocol = "tcp"
+		cidr_blocks = ["0.0.0.0/0"]
+	}
+}
+
+resource "aws_launch_template" "lava" {
 	image_id = "ami-0c55b159cbfafe1f0"
 	instance_type = "t2.micro"
-	security_groups = [aws_security_group.alb.id]
+	#security_groups = [aws_security_group.alb.id]
+	vpc_security_group_ids = [aws_security_group.instance.id]
 
 	user_data = <<-EOF
 				#!/bin/bash -ex
@@ -75,7 +87,7 @@ data "aws_subnet_ids" "lava" {
 
 
 resource "aws_autoscaling_group" "lava" {
-	launch_configuration = aws_launch_configuration.lava.name
+	#launch_configuration = aws_launch_configuration.lava.name
 	vpc_zone_identifier = data.aws_subnet_ids.lava.ids
 
 	target_group_arns = [aws_lb_target_group.asg.arn]
@@ -88,6 +100,10 @@ resource "aws_autoscaling_group" "lava" {
 		key = "Name"
 		value = "terraform-asg-lava"
 		propagate_at_launch = true
+	}
+
+	launch_template {
+		id = aws_launch_template.lava.id
 	}
 }
 
@@ -112,6 +128,22 @@ resource "aws_lb_listener" "http" {
 			status_code = 404
 		}
 	}
+}
+
+resource "aws_lb_listener_rule" "asg" {
+	listener_arn = aws_lb_listener.http.arn
+	priority = 100
+
+	action {
+    	type = "forward"
+    	target_group_arn = aws_lb_target_group.asg.arn
+  }
+
+  condition {
+    path_pattern {
+      values = ["/static/*"]
+    }
+  }
 }
 
 resource "aws_security_group" "alb" {
@@ -153,21 +185,6 @@ resource "aws_lb_target_group" "asg" {
 	}
 }
 
-resource "aws_lb_listener_rule" "asg" {
-	listener_arn = aws_lb_listener.http.arn
-	priority = 100
-
-	action {
-    	type = "forward"
-    	target_group_arn = aws_lb_target_group.asg.arn
-  }
-
-  condition {
-    path_pattern {
-      values = ["/static/*"]
-    }
-  }
-}
 
 output "alb_dns_name" {
 	value = aws_lb.lava.dns_name
