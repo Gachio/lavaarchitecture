@@ -61,11 +61,7 @@ resource "aws_launch_template" "lava" {
 	#security_groups = [aws_security_group.alb.id]
 	vpc_security_group_ids = [aws_security_group.instance.id]
 
-	user_data = <<-EOF
-				#!/bin/bash -ex
-				echo "Hello, World" > index.html
-				nohup busybox httpd-f -p ${var.server_port} &
-				EOF
+	user_data = filebase64("${path.module}/run_server.sh")
 
 # Required when using a launch configuration with an auto scaling group.
 # https://www.terraform.io/docs/providers/aws/r/launch_configuration.html
