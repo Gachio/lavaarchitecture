@@ -48,8 +48,8 @@ resource "aws_security_group" "instance" {
 	name = "lava-identity-instance"
 
 	ingress {
-		from_port = 8080
-		to_port = 8080
+		from_port = var.server_port
+		to_port = var.server_port
 		protocol = "tcp"
 		cidr_blocks = ["0.0.0.0/0"]
 	}
@@ -64,7 +64,7 @@ resource "aws_launch_template" "lava" {
 	user_data = <<-EOF
 				#!/bin/bash -ex
 				echo "Hello, World" > index.html
-				nohup busybox httpd-f -p ${8080} &
+				nohup busybox httpd-f -p ${var.server_port} &
 				EOF
 
 # Required when using a launch configuration with an auto scaling group.
